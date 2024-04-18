@@ -9,19 +9,13 @@ from database import create_database
 from send import send_email
 import threading
 import os
+import subprocess
 
 
 
 
-class UserInfo:
-    def __init__(self, tracking_stocks, email_sms_value, timer, selected_option, name):
-        self.tracking_stocks = tracking_stocks
-        self.email_sms_value = email_sms_value
-        self.timer = timer
-        self.selected_option = selected_option
-        self.name = name
 
-   
+global user_info
 
 
 app = Flask(__name__)
@@ -51,6 +45,9 @@ def index():
         timer = data.get('timer', '')
         selected_option = request.form.get('membership')
         name = data.get('name', '')    
+        
+            # Create an instance of UserInfo
+        user_info = (tracking_stocks, email_sms_value, timer, selected_option, name)
 
         print("Users name is: ", name)
         print("Stocks:", tracking_stocks)
@@ -59,6 +56,7 @@ def index():
         
         print("Selected Option IS :", selected_option)
         alert= email_sms_value
+         
 
        
         #Process(create_database, args=(UserInfo))
@@ -66,8 +64,10 @@ def index():
         # Run the stock tracker in a separate process
         Process(target=run_stock_tracker, args=(tracking_stocks, email_sms_value, timer, selected_option)).start() # Start the stock tracker
         
+        Process(target=create_database, args=(user_info)).start() # Ideally start the database and should work now 
 
         Process(target= send_email, args=(email_sms_value, tracking_stocks, selected_option)).start() # Send the email
+        #def send_email(email_sms_value, tracking_stocks, selected_option):
 
     return render_template('index.html')
 
@@ -105,8 +105,9 @@ def own_pred():
 
 if __name__ == "__main__":
     try:
-        create_database(UserInfo)
-        success = " DATABASE CREATED"
+        create_database()
+        success = " DATABASE CREATED 222222"
+        print (success)
     except Exception as error:
         print (error)
         print ("database creation failed")    
