@@ -2,59 +2,49 @@ import psycopg2
 from flask import Flask
 import multiprocessing
 
+#THE SCRIPT START SO THE PROBLEM IS UNPACKING DATA FROM CREATE_DATABASE ANF PASSING TO POSTGRES
+
 app = Flask(__name__)
+print("THE DATBASE.PY SCRIPT WORKS")
 
-class UserInfo:
-    def __init__(self, tracking_stocks, email_sms_value, timer, selected_option, name, password):
-        self.tracking_stocks = tracking_stocks
-        self.email_sms_value = email_sms_value
-        self.timer = timer
-        self.selected_option = selected_option
-        self.name = name
-        self.password=password
+user_info = None
 
+def set_user_info(info):
+    global user_info
+    user_info = info
 
-def create_database(user_info):
-    hostname = 'localhost'
-    database = 'postgres'
-    username = 'postgres'
-    pswd = 'Cueva123'
-    port_id = '5433'
+def create_database():
+    global user_info
     
+    # Use the user_info global variable here to access the data
+
     conn = None
     cur = None
 
     try:
-        conn = psycopg2.connect(
-            host=hostname,
-            dbname=database,
-            user=username,
-            password=pswd,
-            port=port_id
-        )
-        
-        cur = conn.cursor()
+        conn = psycopg2.connect(host="localhost", dbname="postgres", user="postgres", password="Cueva123", port="5433")
+        cur = conn.cursor() 
 
-        # Extracting attributes from the UserInfo instance
+        # Extracting attributes from the user_info instance
         user_name = user_info.name
         user_email = user_info.email_sms_value
         user_membership = user_info.selected_option
         user_stock = user_info.tracking_stocks
-        user_password = user_info.password
+
+       
 
         # Creating table if not exists
         create_table_query = '''CREATE TABLE IF NOT EXISTS Investiwatcher_users (
                                 user_name VARCHAR(50),
                                 user_email VARCHAR(50) PRIMARY KEY,
                                 user_membership VARCHAR(20),
-                                user_stock VARCHAR(20),
-                                user_password VARCHAR(50)
+                                user_stock VARCHAR(20)
                             )'''
         cur.execute(create_table_query)
         
         # Inserting user information into the table
         insert_query = "INSERT INTO Investiwatcher_users (user_name, user_email, user_membership, user_stock) VALUES (%s, %s, %s, %s)"
-        cur.execute(insert_query, (user_name, user_email, user_membership, user_stock, user_password))
+        cur.execute(insert_query, (user_name, user_email, user_membership, user_stock))
         
         conn.commit()
 
@@ -67,10 +57,10 @@ def create_database(user_info):
         if conn is not None:
             conn.close()
 
+print("THE DATBASE.PY SCRIPT WORKS")
 
-
-# Create an instance of UserInfo
+# Create an instance of user_info
 
 
 # Call the create_database function with user_info
-create_database(UserInfo)
+#create_database(user_info(tracking_stocks, email_sms_value, timer, selected_option, name))
